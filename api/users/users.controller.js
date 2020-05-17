@@ -1,4 +1,5 @@
 const { userModel } = require("./users.model");
+const { promises: fsPromises } = require("fs");
 
 class UserController {
   async getCurrent(req, res, next) {
@@ -29,16 +30,49 @@ class UserController {
         message: "this type of subscription does not exist",
       });
     }
-    const { userId } = req.params;
 
     try {
-      const searchedUser = await userModel.findUserById(userId);
-      if (!searchedUser) return res.status(404).json({ message: "Not found" });
-      const updatedContact = await userModel.updateUserById(userId, {
+      const user = await userModel.findUserByToken(req.token);
+      if (!user) {
+        return res.status(401).json({ message: "Not authorized" });
+      }
+      const updatedContact = await userModel.updateUserById(user._id, {
         subscription,
       });
 
       return res.status(200).json(updatedContact);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateAvatar(req, res, next) {
+    if (!req.file && !req.file.fieldname === "avatar") {
+      return res.status(400).json({
+        message: "missing avatar",
+      });
+    }
+
+    try {
+      const user = await userModel.findUserByToken(req.token);
+      if (!user) {
+        return res.status(401).json({ message: "Not authorized" });
+      }
+
+      const avatarURL = `${process.env.SERVER_URL}${process.env.COMPRESSED_IMAGES_BASE_URL}/${req.file.filename}`;
+
+      await fsPromises.unlink(
+        `${process.env.COMPRESSED_IMAGES_FOLDER}/${user.avatarURL.replace(
+          `${process.env.SERVER_URL}${process.env.COMPRESSED_IMAGES_BASE_URL}`,
+          ""
+        )}`
+      );
+
+      await userModel.updateUserById(user._id, {
+        avatarURL,
+      });
+
+      return res.status(200).json({ avatarURL });
     } catch (err) {
       next(err);
     }

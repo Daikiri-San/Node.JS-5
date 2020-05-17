@@ -8,7 +8,7 @@ const imageminPngquant = require("imagemin-pngquant");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "tmp");
+    cb(null, process.env.UNCOMPRESSED_IMAGES_FOLDER);
   },
   filename: function (req, file, cb) {
     const { ext } = path.parse(file.originalname);
@@ -21,13 +21,11 @@ async function compressImage(req, res, next) {
     next();
   }
 
-  if (req.file) {
-    console.log(req.file);
-  }
   const { path: uncompressedFilePath, filename } = req.file;
   const COMPRESSING_DESTINATING = process.env.COMPRESSED_IMAGES_FOLDER;
+  const UNCOMPRESSED_IMAGES_FOLDER = process.env.UNCOMPRESSED_IMAGES_FOLDER;
 
-  await imagemin([uncompressedFilePath], {
+  await imagemin([`${UNCOMPRESSED_IMAGES_FOLDER}/${filename}`], {
     destination: COMPRESSING_DESTINATING,
     plugins: [
       imageminJpegtran(),

@@ -7,8 +7,8 @@ const authRouter = Router();
 authRouter.post(
   "/register",
   upload.single("avatar"),
-  compressImage,
   AuthController.validateUser,
+  compressImage,
   AuthController.registerUser
 );
 

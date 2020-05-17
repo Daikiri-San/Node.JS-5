@@ -1,7 +1,7 @@
 const { createControllerProxy } = require("../controllerProxy");
-const { userModel } = require("../users/users.model");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { userModel } = require("../users/users.model");
 
 const defaultAvatar =
   "https://icon-library.net/images/avatar-icon-images/avatar-icon-images-7.jpg";
